@@ -1,0 +1,112 @@
+﻿@page "/watchlist"
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@using Syncfusion.Blazor.Navigations
+@inject NavigationManager NavigationManager 
+@inject AuthenticationStateProvider authProvider
+@inject ILogger<Watchlist> logger
+
+
+<link href="_content/Syncfusion.Blazor/styles/material.css" rel="stylesheet" />
+
+<AuthorizeView>
+    <Authorized>
+        <PageTitle>Watchlist</PageTitle>
+        
+        <h1 style="font-family: Arial; font-size: 20px">Watchlist</h1>
+        
+        <SfGrid DataSource="@Stocks" AllowPaging="true" AllowSorting="true" Toolbar="@(new List<string>(){"Delete"})" @bind-Visible="@DoesUserHaveAnyStocksWatched">
+            <GridEvents OnBatchDelete="DeleteFromWatchList" TValue="StockWatchlist" />
+            <GridPageSettings PageSize="5"/>
+            <GridEditSettings AllowDeleting="true" ShowDeleteConfirmDialog="true" Mode="EditMode.Batch"/>
+            <GridColumns>
+                <GridColumn Field=@nameof(StockWatchlist.Name) HeaderText="Name" TextAlign="TextAlign.Center"></GridColumn>
+                <GridColumn Field=@nameof(StockWatchlist.Symbol) HeaderText="Symbol" TextAlign="TextAlign.Center" IsPrimaryKey="true"></GridColumn>
+                <GridColumn Field=@nameof(StockWatchlist.Tags) HeaderText="Tags" TextAlign="TextAlign.Center"></GridColumn>
+                <GridColumn Field=@nameof(StockWatchlist.Country) HeaderText="Country" TextAlign="TextAlign.Center"></GridColumn>
+            </GridColumns>
+        </SfGrid>
+        <SfButton @onclick="@((args) => NavigateToDashboard())">
+            Back
+        </SfButton>
+        
+    </Authorized>
+    <NotAuthorized>
+        <h1>Authentication Failure!</h1>
+        <p>You're not signed in.</p>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    List<StockWatchlist> Stocks { get; set; }
+    bool DoesUserHaveAnyStocksWatched { get; set; } = true;
+    HttpClient client = new HttpClient();
+
+    protected async override Task OnInitializedAsync()
+    {
+        client.BaseAddress = new Uri("https://localhost:7173/");
+
+        var userGuid = await getUserId();
+        logger.LogWarning(userGuid);
+        var response = await client.GetAsync(new Uri($"api/users/{userGuid}", UriKind.Relative));
+        if (!response.IsSuccessStatusCode)
+            return;
+        
+        var stocks = JsonConvert.DeserializeObject<List<StockDTO>>(response.Content.ReadAsStringAsync().Result);
+       
+        if (stocks == null)
+            DoesUserHaveAnyStocksWatched = false;
+
+        Stocks = new List<StockWatchlist>();
+        foreach(StockDTO stock in stocks)
+        {
+            Stocks.Add(new StockWatchlist
+                {
+                    LogoURL = "",
+                    Name = stock.Name,
+                    Symbol = stock.Symbol,
+                    Tags = stock.Tags,
+                    Country = stock.Country
+                });
+        }
+    }
+    public void NavigateToDashboard()
+    {
+        NavigationManager.NavigateTo("/dashboard");
+    }
+
+
+    public async Task DeleteFromWatchList(BeforeBatchDeleteArgs<StockWatchlist> args)
+    {
+        var symbol = args.RowData.Symbol;
+        var userGuid = await getUserId();
+        
+        logger.LogWarning($"api/users/{userGuid}/{symbol}");
+        var resp = await client.DeleteAsync(new Uri($"api/users/{userGuid}/{symbol}", UriKind.Relative));
+        logger.LogWarning(resp.StatusCode.ToString());
+
+        
+        StockWatchlist stock = args.RowData as StockWatchlist;
+        Stocks.Remove(stock);
+    }
+
+    public async Task<string> getUserId(){
+        AuthenticationState authState = await authProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        if (user.Identity.IsAuthenticated)
+            {
+                var userId = $"{user.FindFirst(c => c.Type == "sub")?.Value}";
+                return userId;
+            }
+        return null;
+    }
+
+    public class StockWatchlist
+    {
+        public string LogoURL { get; set; }
+        public string Name { get; set; }
+        public string Symbol { get; set; }
+        public string Tags { get; set; }
+        public string Country { get; set; }
+    }
+}

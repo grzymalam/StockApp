@@ -1,0 +1,150 @@
+﻿@page "/dashboard"
+
+@inject AuthenticationStateProvider authProvider
+@inject IJSRuntime JsRuntime
+@inject ILogger<Dashboard> logger
+@inject NavigationManager NavigationManager 
+
+<link href="_content/Syncfusion.Blazor/styles/material.css" rel="stylesheet" />
+<AuthorizeView>
+    <Authorized>
+        <PageTitle>Dashboard</PageTitle>
+        
+        <h1>Dashboard</h1>
+        <div>
+        <SfAutoComplete TItem="StockSearchDTO" TValue="string" DataSource="Stocks" Placeholder="Select a stock" @bind-Value="@StockName">
+            <AutoCompleteEvents TValue="string" TItem="StockSearchDTO" OnValueSelect="@OnValueSelectHandler"></AutoCompleteEvents>
+            <AutoCompleteFieldSettings Value="Symbol" Text="Name"></AutoCompleteFieldSettings>
+        </SfAutoComplete>
+        <SfButton @onclick="@((args) => AddToWatchlist())">
+            +
+        </SfButton>
+        </div>
+        <div>
+            <SfStockChart Title="@StockName" @ref="chart">
+                <StockChartSeriesCollection>
+                    <StockChartSeries Type="@ChartSeriesType.Candle" DataSource="@StockDetails" XName="Date" High="High" Low="Low" Open="Open" Close="Close">
+
+                    </StockChartSeries>
+                </StockChartSeriesCollection>
+            </SfStockChart>
+        </div>
+        <SfButton @onclick="@((args) => NavigateToWatchlist())">
+            Watchlist
+        </SfButton>
+        
+    </Authorized>
+    <NotAuthorized>
+        <h1>Authentication Failure!</h1>
+        <p>You're not signed in.</p>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    List<StockSearchDTO> Stocks { get; set; }
+    bool IsStockChartVisible { get; set; } = false;
+    string StockName { get; set; } 
+    List<StockData> StockDetails { get; set; }
+    SfStockChart chart;
+    HttpClient client = new HttpClient();
+
+    protected async override Task OnInitializedAsync()
+    {
+        StockDetails = new List<StockData>{
+            new StockData{
+                Date = DateTime.Now.AddDays(-6),
+                Open = 100,
+                High = 120,
+                Low = 90,
+                Close = 101,
+                Volume = 1000002
+            }};
+        client.BaseAddress = new Uri("https://localhost:7173/");
+
+        var stocks = await client.GetFromJsonAsync<List<StockSearchDTO>>(new Uri("api/stocks", UriKind.Relative));
+        logger.LogWarning(stocks.First().Name);
+        Stocks = new List<StockSearchDTO>();
+        foreach(StockSearchDTO stock in stocks)
+        {
+            Stocks.Add(new StockSearchDTO
+                {
+                    Name = stock.Name,
+                    Symbol = stock.Symbol,
+                    Exchange = stock.Exchange,
+                    AssetType = stock.AssetType
+                });
+        }
+    }
+
+    private async Task OnValueSelectHandler(Syncfusion.Blazor.DropDowns.SelectEventArgs<StockSearchDTO> args)
+    {
+        var stockInfo = await GetTickers(args.ItemData.Symbol);
+        if(stockInfo == null)
+        {
+            await JsRuntime.InvokeAsync<object>("alert", new String("The stock you chose is unavailable."));
+            return;
+        }
+        IsStockChartVisible = true;
+        StockDetails = new List<StockData>();
+        foreach(TickerDTO ticker in stockInfo.Tickers)
+        {
+            System.DateTime dt = new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc);
+            dt = dt.AddMilliseconds(ticker.Date);
+            logger.LogWarning(dt.ToString());
+            StockDetails.Add(new StockData
+            {
+                Date = dt,
+                Open = ticker.Open,
+                High = ticker.High,
+                Low = ticker.Low,
+                Close = ticker.Close,
+                Volume = ticker.Volume
+            });
+        }
+        chart.UpdateStockChart();
+    }
+    private async Task<StockDTO> GetTickers(string symbol)
+    {
+        var response = await client.GetAsync(new Uri($"api/stocks/{symbol}", UriKind.Relative));
+        if (!response.IsSuccessStatusCode)
+            return null;
+
+        var stocks = JsonConvert.DeserializeObject<StockDTO>(response.Content.ReadAsStringAsync().Result);
+        return stocks;
+    }
+    public void NavigateToWatchlist()
+    {
+        NavigationManager.NavigateTo("/watchlist");
+    }
+    public async Task AddToWatchlist()
+    {
+        var userGuid = await GetUserId();
+        var response = await client.PostAsync(new Uri($"api/users/{userGuid}/{StockName}", UriKind.Relative), null);
+        if (!response.IsSuccessStatusCode)
+        {
+            await JsRuntime.InvokeAsync<object>("alert", new String("You are already watching this stock."));
+            return;
+        }
+    }
+
+    public async Task<string> GetUserId(){
+        AuthenticationState authState = await authProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        if (user.Identity.IsAuthenticated)
+            {
+                var userId = $"{user.FindFirst(c => c.Type == "sub")?.Value}";
+                return userId;
+            }
+        return null;
+    }
+
+    public class StockData
+    {
+        public DateTime Date { get; set; }
+        public Double Open { get; set; }
+        public Double High { get; set; }
+        public Double Low { get; set; }
+        public Double Close { get; set; }
+        public Double Volume { get; set; }
+    }
+}
