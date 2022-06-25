@@ -1,4 +1,5 @@
 ﻿@page "/dashboard"
+@page "/dashboard/{StockName}"
 
 @inject AuthenticationStateProvider authProvider
 @inject IJSRuntime JsRuntime
@@ -16,23 +17,25 @@
             <AutoCompleteEvents TValue="string" TItem="StockSearchDTO" OnValueSelect="@OnValueSelectHandler"></AutoCompleteEvents>
             <AutoCompleteFieldSettings Value="Symbol" Text="Name"></AutoCompleteFieldSettings>
         </SfAutoComplete>
-        <SfButton @onclick="@((args) => AddToWatchlist())">
-            +
-        </SfButton>
-        </div>
-        <div>
-            <SfStockChart Title="@StockName" @ref="chart">
-                <StockChartSeriesCollection>
-                    <StockChartSeries Type="@ChartSeriesType.Candle" DataSource="@StockDetails" XName="Date" High="High" Low="Low" Open="Open" Close="Close">
+        @if (StockName != null)
+        {                
+            <div>
+                <SfButton @onclick="@((args) => AddToWatchlist())">
+                    +
+                </SfButton>
+                    <SfStockChart Title="@StockName" @ref="chart">
+                        <StockChartSeriesCollection>
+                            <StockChartSeries Type="@ChartSeriesType.Candle" DataSource="@StockDetails" XName="Date" High="High" Low="Low" Open="Open" Close="Close">
 
-                    </StockChartSeries>
-                </StockChartSeriesCollection>
-            </SfStockChart>
+                            </StockChartSeries>
+                        </StockChartSeriesCollection>
+                    </SfStockChart>
+                <SfButton @onclick="@((args) => NavigateToWatchlist())">
+                    Watchlist
+                </SfButton>
+            </div>   
+        }
         </div>
-        <SfButton @onclick="@((args) => NavigateToWatchlist())">
-            Watchlist
-        </SfButton>
-        
     </Authorized>
     <NotAuthorized>
         <h1>Authentication Failure!</h1>
@@ -41,24 +44,17 @@
 </AuthorizeView>
 
 @code {
+    [Parameter]
+    public string? StockName { get; set; }
     List<StockSearchDTO> Stocks { get; set; }
     bool IsStockChartVisible { get; set; } = false;
-    string StockName { get; set; } 
     List<StockData> StockDetails { get; set; }
     SfStockChart chart;
     HttpClient client = new HttpClient();
 
     protected async override Task OnInitializedAsync()
     {
-        StockDetails = new List<StockData>{
-            new StockData{
-                Date = DateTime.Now.AddDays(-6),
-                Open = 100,
-                High = 120,
-                Low = 90,
-                Close = 101,
-                Volume = 1000002
-            }};
+        logger.LogWarning("init");
         client.BaseAddress = new Uri("https://localhost:7173/");
 
         var stocks = await client.GetFromJsonAsync<List<StockSearchDTO>>(new Uri("api/stocks", UriKind.Relative));
@@ -78,7 +74,13 @@
 
     private async Task OnValueSelectHandler(Syncfusion.Blazor.DropDowns.SelectEventArgs<StockSearchDTO> args)
     {
-        var stockInfo = await GetTickers(args.ItemData.Symbol);
+        NavigationManager.NavigateTo($"/dashboard/{args.ItemData.Symbol}");
+        LoadChartData();
+        StateHasChanged();
+    }
+    private async Task LoadChartData()
+    {
+        var stockInfo = await GetTickers(StockName);
         if(stockInfo == null)
         {
             await JsRuntime.InvokeAsync<object>("alert", new String("The stock you chose is unavailable."));
@@ -126,8 +128,7 @@
             return;
         }
     }
-
-    public async Task<string> GetUserId(){
+     public async Task<string> GetUserId(){
         AuthenticationState authState = await authProvider.GetAuthenticationStateAsync();
         var user = authState.User;
         if (user.Identity.IsAuthenticated)
