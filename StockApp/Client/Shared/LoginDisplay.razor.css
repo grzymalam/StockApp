@@ -1,0 +1,35 @@
+﻿.leftSide {
+    flex: 1;
+    justify-content: flex-start;
+    margin-top: 3px;
+}
+.rightSide {
+    justify-content: flex-end;
+    margin-top: 3px;
+}
+.leftSideLogo {
+    max-width: 100%;
+    max-height: calc(3.5rem - 6px);
+}
+.rightSideProfile {
+    max-height: calc(3.5em - 6px);
+    margin-right: 5px;
+    transform: translateY(-20px);
+}
+.rightSideLogout {
+    max-width: 100%;
+    max-height: calc(3.5rem - 6px);
+}
+
+.leftSideLogo:hover {
+    transition: 0.1s;
+    -webkit-filter: drop-shadow(2px 2px 2px #444);
+}
+.rightSideProfile:hover {
+    transition: 0.1s;
+    -webkit-filter: drop-shadow(2px 2px 2px #444);
+}
+.rightSideLogout:hover {
+    transition: 0.1s;
+    -webkit-filter: drop-shadow(2px 2px 2px #444);
+}

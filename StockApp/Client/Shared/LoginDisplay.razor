@@ -4,10 +4,20 @@
 @inject NavigationManager Navigation
 @inject SignOutSessionStateManager SignOutManager
 
+
 <AuthorizeView>
     <Authorized>
-        <a href="authentication/profile">Hello, @context.User.Identity?.Name!</a>
-        <button class="nav-link btn btn-link" @onclick="BeginSignOut">Log out</button>
+        <div class="leftSide">
+            <a href="/dashboard">
+                <img class="leftSideLogo" src="https://pic.onlinewebfonts.com/svg/img_473873.png" alt="logo"/>
+            </a>
+        </div>
+        <div class="rightSide">
+            <a href="/authentication/profile">
+                <img class="rightSideProfile" src="https://icon-library.com/images/profile-png-icon/profile-png-icon-2.jpg" alt="profile" />
+            </a>
+            <input class="rightSideLogout" type="image" @onclick="BeginSignOut" src="https://uxwing.com/wp-content/themes/uxwing/download/09-controller-and-music/power-off.png"/>
+        </div>
     </Authorized>
     <NotAuthorized>
         <a href="authentication/register">Register</a>

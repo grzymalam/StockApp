@@ -12,8 +12,10 @@
 <AuthorizeView>
     <Authorized>
         <PageTitle>Watchlist</PageTitle>
-        
-        <h1 style="font-family: Arial; font-size: 20px">Watchlist</h1>
+        <SfButton @onclick="@((args) => NavigateToDashboard())">
+            Dashboard
+        </SfButton>
+        <h1>Watchlist</h1>
         
         <SfGrid DataSource="@Stocks" AllowPaging="true" AllowSorting="true" Toolbar="@(new List<string>(){"Delete"})" @bind-Visible="@DoesUserHaveAnyStocksWatched">
             <GridEvents OnBatchDelete="DeleteFromWatchList" TValue="StockWatchlist" />
@@ -26,10 +28,6 @@
                 <GridColumn Field=@nameof(StockWatchlist.Country) HeaderText="Country" TextAlign="TextAlign.Center"></GridColumn>
             </GridColumns>
         </SfGrid>
-        <SfButton @onclick="@((args) => NavigateToDashboard())">
-            Back
-        </SfButton>
-        
     </Authorized>
     <NotAuthorized>
         <h1>Authentication Failure!</h1>
