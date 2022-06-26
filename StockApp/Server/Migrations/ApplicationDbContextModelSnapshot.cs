@@ -330,8 +330,8 @@ namespace StockApp.Server.Migrations
                     b.Property<int>("TransactionCount")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("Volume")
-                        .HasColumnType("decimal(20,0)");
+                    b.Property<long>("Volume")
+                        .HasColumnType("bigint");
 
                     b.Property<float>("VolumeAvg")
                         .HasColumnType("real");

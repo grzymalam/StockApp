@@ -17,34 +17,52 @@ a {
 }
 
 .btn-primary {
-  color: #fff;
-  background-color: #1b6ec2;
-  border-color: #1861ac;
-  margin-bottom: 5px;
+    color: #fff;
+    background-color: #C6DCE4;
+    border-color: #1861ac;
+    margin-bottom: 5px;
 }
-
+.container{
+    vertical-align: center;
+    margin: auto;
+}
 .nav-pills .nav-link.active, .nav-pills .show > .nav-link {
-  color: #fff;
-  background-color: #1b6ec2;
-  border-color: #1861ac;
+    color: #fff;
+    background-color: #C6DCE4;
+    border-color: #1861ac;
 }
-
+.form-floating{
+    margin-bottom: 5px;
+}
 .btn-link.nav-link:focus {
   outline: black auto 1px;
 }
+.login-container{
+    display: table-cell;
+    vertical-align: middle;
+    max-width: 50vw;
+}
 
 html {
-  font-size: 14px;
+    display: table;
+    vertical-align: middle;
+    height: 100vh;
+    margin: auto;
+    background: #FFE6E6;
+    font-size: 14px;
 }
+body {
+    display: table-cell;
+    vertical-align: middle;
+    background-color: #FFE6E6;
+}
+
 @media (min-width: 768px) {
   html {
     font-size: 16px;
   }
 }
 
-.container {
-  max-width: 960px;
-}
 
 .pricing-header {
   max-width: 700px;
@@ -71,9 +89,6 @@ html {
   min-height: 100%;
 }
 
-body {
-  margin-bottom: 60px;
-}
 .footer {
   position: absolute;
   bottom: 0;

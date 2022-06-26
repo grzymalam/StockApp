@@ -240,7 +240,7 @@ namespace StockApp.Server.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Volume = table.Column<decimal>(type: "decimal(20,0)", nullable: false),
+                    Volume = table.Column<long>(type: "bigint", nullable: false),
                     VolumeAvg = table.Column<float>(type: "real", nullable: false),
                     Open = table.Column<float>(type: "real", nullable: false),
                     Close = table.Column<float>(type: "real", nullable: false),

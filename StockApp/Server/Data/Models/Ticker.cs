@@ -5,7 +5,7 @@ namespace StockApp.Server.Data.Models
     public class Ticker
     {
         public int Id { get; set; }
-        public ulong Volume { get; set; }
+        public long Volume { get; set; }
         public float VolumeAvg { get; set; }
         public float Open { get; set; }
         public float Close { get; set; }

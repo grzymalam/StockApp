@@ -42,11 +42,11 @@
         @if(StockName!=null)
         {
             <div>
-            <SfStockChart Title="@StockName" @ref="chart">
-                <StockChartSeriesCollection>
-                    <StockChartSeries Type="@ChartSeriesType.Candle" DataSource="@StockDetails" XName="Date" High="High" Low="Low" Open="Open" Close="Close"></StockChartSeries>
-                </StockChartSeriesCollection>
-            </SfStockChart>
+                <SfStockChart Title="@StockName" @ref="chart">
+                    <StockChartSeriesCollection>
+                        <StockChartSeries Type="@ChartSeriesType.HiloOpenClose" DataSource="@StockDetails" XName="Date" High="High" Low="Low" Open="Open" Close="Close"></StockChartSeries>
+                    </StockChartSeriesCollection>
+                </SfStockChart>
             </div>
         }
         @if(Stock != null)
@@ -56,7 +56,7 @@
                 <table>
                     <tr>
                         <th>From</th>
-                        <td>@Stock.Date</td>
+                        <td>@UpdateTime</td>
                     </tr>
                     <tr>
                         <th>Symbol</th>
@@ -85,7 +85,7 @@
                 </table>
             </div>
             @if(Articles!=null){
-                <div style="float:right">
+                <div>
                         <h3>News</h3>
                         <ul>
                             @foreach (var news in Articles)
@@ -110,6 +110,7 @@
     public string? StockName { get; set; }
     public StockDTO? Stock { get; set; }
     public List<ArticleDTO>? Articles { get; set; }
+    public DateTime UpdateTime { get; set; }
     List<StockSearchDTO> Stocks { get; set; }
     List<StockData> StockDetails { get; set; }
     SfStockChart chart;
@@ -149,11 +150,10 @@
             return;
         }
         StockDetails = new List<StockData>();
+        logger.LogWarning("count:" + stockInfo.Tickers.Count());
         foreach(TickerDTO ticker in stockInfo.Tickers)
         {
-            DateTime dt = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
-            dt = dt.AddMilliseconds(ticker.Date);
-            logger.LogWarning(dt.ToString());
+            DateTime dt = DateTimeOffset.FromUnixTimeMilliseconds(ticker.Date).DateTime;
             StockDetails.Add(new StockData
             {
                 Date = dt,
@@ -171,9 +171,11 @@
         var response = await client.GetAsync(new Uri($"api/stocks/{symbol}", UriKind.Relative));
         if (!response.IsSuccessStatusCode)
             return null;
-        var stocks = JsonConvert.DeserializeObject<StockDTO>(response.Content.ReadAsStringAsync().Result);
-        Stock = stocks;
-        return stocks;
+        var stock = JsonConvert.DeserializeObject<StockDTO>(response.Content.ReadAsStringAsync().Result);
+        DateTime dt = DateTimeOffset.FromUnixTimeSeconds(stock.Date).DateTime;
+        UpdateTime = dt;
+        Stock = stock;
+        return stock;
     }
     
     public async Task<List<ArticleDTO>> GetArticles(string symbol)

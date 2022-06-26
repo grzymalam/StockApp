@@ -29,15 +29,19 @@ namespace StockApp.Server.Services
         public async Task<StockDTO> GetStockFromAPI(string symbol)
         {
             symbol = symbol.ToUpper();
-            var apiKey = "AU1hCQFcAbUpEiieLlv3UfW0U2c509e0";
+            var apiKey = "xIpaU5nZc2gA_gn6qZ96vPGfPiqnrbO2";
             HttpClient connection = new HttpClient();
             var today = DateTime.Now.ToString("yyyy-MM-dd");
             var threeMonthsAgo = DateTime.Now.AddMonths(-3).ToString("yyyy-MM-dd");
+            Debug.WriteLine("today:"+today);
+            Debug.WriteLine("3m ago:"+ threeMonthsAgo);
             try
             {
-                var json = await connection.GetStringAsync($"https://api.polygon.io/v2/aggs/ticker/{symbol}/range/1/day/{threeMonthsAgo}/{today}?sort=asc&apiKey={apiKey}");
+                var reqURL = $"https://api.polygon.io/v2/aggs/ticker/{symbol}/range/4/hour/{threeMonthsAgo}/{today}?sort=asc&&limit=50000&apiKey={apiKey}";
+                var json = await connection.GetStringAsync(reqURL);
                 Debug.WriteLine(json);
                 var stock = JsonConvert.DeserializeObject<StockGet>(json);
+                Debug.WriteLine("count: " + stock.Results.Count);
                 var tickersDTO = stock.Results.Select(e => new TickerDTO
                 {
                     Volume = e.V,
@@ -57,14 +61,14 @@ namespace StockApp.Server.Services
                 var assetType = jsonObject.SelectToken("results.market").Value<string>();
                 var market = jsonObject.SelectToken("results.primary_exchange").Value<string>();
                 var logoURL = jsonObject.SelectToken("results.branding.icon_url").Value<string>() + $"?apikey={apiKey}";
-
+                var time = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds();
                 var toReturn = new StockDTO
                 {
                     Symbol = stock.Ticker,
                     Name = name,
                     Country = country,
                     LogoURL = logoURL,
-                    Date = DateTime.Now,
+                    Date = time,
                     Tags = tags,
                     Close = tickersDTO.First().Close,
                     Volume = tickersDTO.First().Volume,
@@ -74,9 +78,9 @@ namespace StockApp.Server.Services
                     Tickers = tickersDTO
                 };
                 //caching
-                var row = _context.CachedStocks.Where(e => e.Symbol.Equals(toReturn.Symbol));
+                var row = await _context.CachedStocks.SingleOrDefaultAsync(e => e.Symbol.Equals(toReturn.Symbol));
 
-                if (row.Count() > 0)
+                if (row != null)
                     _context.Remove(row);
 
                 var tickers = tickersDTO.Select(e => new Ticker
@@ -105,15 +109,16 @@ namespace StockApp.Server.Services
                     Low = toReturn.Low,
                     AssetType = assetType,
                     Exchange = market,
-                    UpdateTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
+                    UpdateTime = time,
                     Tickers = tickers
                 });
-                Debug.WriteLine(toReturn);
+                Debug.WriteLine("toreturn ticker count: " + toReturn.Tickers.Count());
                 return toReturn;
+
             }
             catch (Exception ex)
             {
-                Debug.WriteLine(ex);
+                Debug.WriteLine("Getting stock from api error.");
                 return null;
             }
         }
@@ -143,6 +148,7 @@ namespace StockApp.Server.Services
                 Country = stock.Country,
                 LogoURL = stock.LogoURL,
                 Tags = stock.Tags,
+                Date = stock.UpdateTime,
                 Close = tickers.First().Close,
                 Open = tickers.First().Open,
                 High = tickers.First().High,

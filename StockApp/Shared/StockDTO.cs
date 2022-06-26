@@ -7,7 +7,7 @@
         public string Country { get; set; }
         public string LogoURL { get; set; }
         public string Tags { get; set; }
-        public DateTime Date { get; set; }
+        public long Date { get; set; }
         public float Close { get; set; }
         public float Volume { get; set; }
         public float Open { get; set; }

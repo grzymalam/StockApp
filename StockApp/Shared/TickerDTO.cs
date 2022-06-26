@@ -8,7 +8,7 @@ namespace StockApp.Shared
 {
     public class TickerDTO
     {
-        public ulong Volume { get; set; }
+        public long Volume { get; set; }
         public float VolumeAvg { get; set; }
         public float Open { get; set; }
         public float Close { get; set; }

@@ -2,12 +2,13 @@
 @model RegisterModel
 @{
     ViewData["Title"] = "Register";
+    var returnUrl = "/";
 }
 
-<h1>@ViewData["Title"]</h1>
+<h1 style="text-align: center">@ViewData["Title"]</h1>
 
 <div class="row">
-    <div class="col-md-4">
+    <div class="login-container">
         <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post">
             <hr />
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
@@ -26,7 +27,14 @@
                 <label asp-for="Input.ConfirmPassword"></label>
                 <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
             </div>
-            <button id="registerSubmit" type="submit" class="w-100 btn btn-lg btn-primary">Register</button>
+            <hr />
+            <div>
+                <button id="registerSubmit" type="submit" class="w-100 btn btn-lg btn-primary">Register</button>
+            </div>
+            <hr style="width:10vw; margin-left: auto; margin-right: auto"/>
+            <div>
+                 <a class="w-100 btn btn-lg btn-primary" asp-area="Identity" asp-page="/Account/Login" asp-route-returnUrl="@returnUrl">Login</a>
+            </div>
         </form>
     </div>
 </div>

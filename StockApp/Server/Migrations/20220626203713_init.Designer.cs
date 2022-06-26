@@ -12,7 +12,7 @@ using StockApp.Server.Data;
 namespace StockApp.Server.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20220625204553_init")]
+    [Migration("20220626203713_init")]
     partial class init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -332,8 +332,8 @@ namespace StockApp.Server.Migrations
                     b.Property<int>("TransactionCount")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("Volume")
-                        .HasColumnType("decimal(20,0)");
+                    b.Property<long>("Volume")
+                        .HasColumnType("bigint");
 
                     b.Property<float>("VolumeAvg")
                         .HasColumnType("real");

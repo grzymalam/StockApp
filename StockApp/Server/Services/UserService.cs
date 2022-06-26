@@ -48,7 +48,7 @@ namespace StockApp.Server.Services
                 Name = e.Name,
                 Country = e.Country,
                 LogoURL = e.LogoURL,
-                Date = dt.AddMilliseconds(e.UpdateTime),
+                Date = e.UpdateTime,
                 Tags = e.Tags,
                 Volume = e.Volume,
                 High = e.High,

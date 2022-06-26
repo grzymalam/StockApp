@@ -9,7 +9,7 @@ namespace StockApp.Server.Data.DTOs.Stock
     public class TickerGet
     {
         [JsonProperty("v")]
-        public ulong V { get; set; }
+        public long V { get; set; }
         [JsonProperty("vw")]
 
         public float Vw { get; set; }

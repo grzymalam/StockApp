@@ -24,9 +24,9 @@ tr {
 .child {
     float: 1;
     padding: 5px;
+    padding-bottom: 0px;
 }
 .child-right{
-    float: right;
     margin-left: auto
 }
 .e-ddl.e-input-group.e-control-wrapper.e-input-focus::before, .e-ddl.e-input-group.e-control-wrapper.e-input-focus::after {
