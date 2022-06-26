@@ -55,6 +55,7 @@ namespace StockApp.Server.Migrations
                     Symbol = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Country = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    LogoURL = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Tags = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Close = table.Column<float>(type: "real", nullable: false),
                     Volume = table.Column<float>(type: "real", nullable: false),

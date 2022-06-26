@@ -12,7 +12,7 @@ using StockApp.Server.Data;
 namespace StockApp.Server.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20220624153121_init")]
+    [Migration("20220625204553_init")]
     partial class init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -432,6 +432,10 @@ namespace StockApp.Server.Migrations
 
                     b.Property<float>("High")
                         .HasColumnType("real");
+
+                    b.Property<string>("LogoURL")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<float>("Low")
                         .HasColumnType("real");

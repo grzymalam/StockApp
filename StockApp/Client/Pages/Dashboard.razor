@@ -20,45 +20,106 @@
             <AutoCompleteEvents TValue="string" TItem="StockSearchDTO" OnValueSelect="@OnValueSelectHandler"></AutoCompleteEvents>
             <AutoCompleteFieldSettings Value="Symbol" Text="Name"></AutoCompleteFieldSettings>
         </SfAutoComplete>
-        @if (StockName != null)
-        {                
-            <div>
+        </div>
+        @if (Stock != null)
+        {
+        <div class="parent">
+            <div class="child">
+                <img src="@Stock.LogoURL" style="margin-bottom: 10px; width: 96px; height: 96px"/>
+            </div>
+            <div class="child">
+                <h1 style="text-align: left">@Stock.Name</h1>  
+                <h4>@Stock.Tags</h4>
+            </div>
+            <div class="child-right">
+                <h5 style="display: inline-block">Add to watchlist</h5>
                 <SfButton @onclick="@((args) => AddToWatchlist())">
                     +
                 </SfButton>
-                    <SfStockChart Title="@StockName" @ref="chart">
-                        <StockChartSeriesCollection>
-                            <StockChartSeries Type="@ChartSeriesType.Candle" DataSource="@StockDetails" XName="Date" High="High" Low="Low" Open="Open" Close="Close">
-
-                            </StockChartSeries>
-                        </StockChartSeriesCollection>
-                    </SfStockChart>
-            </div>   
-        }
+            </div>
         </div>
+        }
+        @if(StockName!=null)
+        {
+            <div>
+            <SfStockChart Title="@StockName" @ref="chart">
+                <StockChartSeriesCollection>
+                    <StockChartSeries Type="@ChartSeriesType.Candle" DataSource="@StockDetails" XName="Date" High="High" Low="Low" Open="Open" Close="Close"></StockChartSeries>
+                </StockChartSeriesCollection>
+            </SfStockChart>
+            </div>
+        }
+        @if(Stock != null)
+        {
+        <div style="display:flex; height: 100%">
+            <div style="flex:1">
+                <table>
+                    <tr>
+                        <th>From</th>
+                        <td>@Stock.Date</td>
+                    </tr>
+                    <tr>
+                        <th>Symbol</th>
+                        <td>@Stock.Symbol</td>
+                    </tr>
+                    <tr>
+                        <th>Open</th>
+                        <td>@Stock.Open</td>
+                    </tr>
+                    <tr>
+                        <th>Close</th>
+                        <td>@Stock.Close</td>
+                    </tr>
+                    <tr>
+                        <th>Low</th>
+                        <td>@Stock.Low</td>
+                    </tr>
+                    <tr>
+                        <th>High</th>
+                        <td>@Stock.High</td>
+                    </tr>
+                    <tr>
+                        <th>Volume</th>
+                        <td>@Stock.Volume</td>
+                    </tr>
+                </table>
+            </div>
+            @if(Articles!=null){
+                <div style="float:right">
+                        <h3>News</h3>
+                        <ul>
+                            @foreach (var news in Articles)
+                            {
+                                <li>
+                                    <a href="@news.URL">@news.Title</a>
+                                </li>
+                            }
+                        </ul>
+                </div>
+            }
+        </div>
+        }
     </Authorized>
     <NotAuthorized>
-        <h1>Authentication Failure!</h1>
-        <p>You're not signed in.</p>
+        <RedirectToLogin/>
     </NotAuthorized>
 </AuthorizeView>
 
 @code {
     [Parameter]
     public string? StockName { get; set; }
+    public StockDTO? Stock { get; set; }
+    public List<ArticleDTO>? Articles { get; set; }
     List<StockSearchDTO> Stocks { get; set; }
-    bool IsStockChartVisible { get; set; } = false;
     List<StockData> StockDetails { get; set; }
     SfStockChart chart;
     HttpClient client = new HttpClient();
 
     protected async override Task OnInitializedAsync()
     {
-        logger.LogWarning("init");
         client.BaseAddress = new Uri("https://localhost:7173/");
 
         var stocks = await client.GetFromJsonAsync<List<StockSearchDTO>>(new Uri("api/stocks", UriKind.Relative));
-        logger.LogWarning(stocks.First().Name);
         Stocks = new List<StockSearchDTO>();
         foreach(StockSearchDTO stock in stocks)
         {
@@ -75,22 +136,22 @@
     private async Task OnValueSelectHandler(Syncfusion.Blazor.DropDowns.SelectEventArgs<StockSearchDTO> args)
     {
         NavigationManager.NavigateTo($"/dashboard/{args.ItemData.Symbol}");
-        LoadChartData();
+        await LoadChartData();
         StateHasChanged();
     }
     private async Task LoadChartData()
     {
         var stockInfo = await GetTickers(StockName);
+        Articles = await GetArticles(StockName);
         if(stockInfo == null)
         {
             await JsRuntime.InvokeAsync<object>("alert", new String("The stock you chose is unavailable."));
             return;
         }
-        IsStockChartVisible = true;
         StockDetails = new List<StockData>();
         foreach(TickerDTO ticker in stockInfo.Tickers)
         {
-            System.DateTime dt = new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc);
+            DateTime dt = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
             dt = dt.AddMilliseconds(ticker.Date);
             logger.LogWarning(dt.ToString());
             StockDetails.Add(new StockData
@@ -110,9 +171,18 @@
         var response = await client.GetAsync(new Uri($"api/stocks/{symbol}", UriKind.Relative));
         if (!response.IsSuccessStatusCode)
             return null;
-
         var stocks = JsonConvert.DeserializeObject<StockDTO>(response.Content.ReadAsStringAsync().Result);
+        Stock = stocks;
         return stocks;
+    }
+    
+    public async Task<List<ArticleDTO>> GetArticles(string symbol)
+    {
+        var response = await client.GetAsync(new Uri($"api/articles/{symbol}", UriKind.Relative));
+        if (!response.IsSuccessStatusCode)
+            return null;
+        var articles = JsonConvert.DeserializeObject<List<ArticleDTO>>(response.Content.ReadAsStringAsync().Result);
+        return new List<ArticleDTO>(articles.OrderByDescending(e => e.DatePublished).Take(7));
     }
     public void NavigateToWatchlist()
     {

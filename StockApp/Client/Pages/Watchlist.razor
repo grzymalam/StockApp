@@ -9,31 +9,35 @@
 
 <link href="_content/Syncfusion.Blazor/styles/material.css" rel="stylesheet" />
 
-<AuthorizeView>
-    <Authorized>
-        <PageTitle>Watchlist</PageTitle>
-        <SfButton @onclick="@((args) => NavigateToDashboard())">
-            Dashboard
-        </SfButton>
-        <h1>Watchlist</h1>
+
+<PageTitle>Watchlist</PageTitle>
+<SfButton @onclick="@((args) => NavigateToDashboard())">
+    Dashboard
+</SfButton>
+<h1>Watchlist</h1>
         
-        <SfGrid DataSource="@Stocks" AllowPaging="true" AllowSorting="true" Toolbar="@(new List<string>(){"Delete"})" @bind-Visible="@DoesUserHaveAnyStocksWatched">
-            <GridEvents OnBatchDelete="DeleteFromWatchList" TValue="StockWatchlist" />
-            <GridPageSettings PageSize="5"/>
-            <GridEditSettings AllowDeleting="true" ShowDeleteConfirmDialog="true" Mode="EditMode.Batch"/>
-            <GridColumns>
-                <GridColumn Field=@nameof(StockWatchlist.Name) HeaderText="Name" TextAlign="TextAlign.Center"></GridColumn>
-                <GridColumn Field=@nameof(StockWatchlist.Symbol) HeaderText="Symbol" TextAlign="TextAlign.Center" IsPrimaryKey="true"></GridColumn>
-                <GridColumn Field=@nameof(StockWatchlist.Tags) HeaderText="Tags" TextAlign="TextAlign.Center"></GridColumn>
-                <GridColumn Field=@nameof(StockWatchlist.Country) HeaderText="Country" TextAlign="TextAlign.Center"></GridColumn>
-            </GridColumns>
-        </SfGrid>
-    </Authorized>
-    <NotAuthorized>
-        <h1>Authentication Failure!</h1>
-        <p>You're not signed in.</p>
-    </NotAuthorized>
-</AuthorizeView>
+<SfGrid DataSource="@Stocks" AllowPaging="true" AllowSorting="true" Toolbar="@(new List<string>(){"Delete"})" @bind-Visible="@DoesUserHaveAnyStocksWatched">
+    <GridEvents OnBatchDelete="DeleteFromWatchList" TValue="StockWatchlist" />
+    <GridPageSettings PageSize="5"/>
+    <GridEditSettings AllowDeleting="true" ShowDeleteConfirmDialog="true" Mode="EditMode.Batch"/>
+    <GridColumns>
+        <GridColumn HeaderText="Logo" TextAlign="TextAlign.Center" Width="100">
+            <Template> 
+                @{
+                    var stock = (context as StockWatchlist);
+                    var url = stock.LogoURL;
+                    <div class="image"> 
+                        <img src="@url" alt="logo" height="48" width="48"/> 
+                    </div> 
+                } 
+            </Template> 
+        </GridColumn>
+        <GridColumn Field=@nameof(StockWatchlist.Name) HeaderText="Name" TextAlign="TextAlign.Center"></GridColumn>
+        <GridColumn Field=@nameof(StockWatchlist.Symbol) HeaderText="Symbol" TextAlign="TextAlign.Center" IsPrimaryKey="true"></GridColumn>
+        <GridColumn Field=@nameof(StockWatchlist.Tags) HeaderText="Tags" TextAlign="TextAlign.Center"></GridColumn>
+        <GridColumn Field=@nameof(StockWatchlist.Country) HeaderText="Country" TextAlign="TextAlign.Center"></GridColumn>
+    </GridColumns>
+</SfGrid>
 
 @code {
     List<StockWatchlist> Stocks { get; set; }
@@ -60,7 +64,7 @@
         {
             Stocks.Add(new StockWatchlist
                 {
-                    LogoURL = "",
+                    LogoURL = stock.LogoURL,
                     Name = stock.Name,
                     Symbol = stock.Symbol,
                     Tags = stock.Tags,

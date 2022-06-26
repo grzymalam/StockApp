@@ -8,12 +8,14 @@
 
   <ItemGroup>
     <None Remove="Pages\Dashboard.razor.css" />
+    <None Remove="Pages\LoggedOut.razor.css" />
     <None Remove="Pages\Watchlist.razor.css" />
     <None Remove="Shared\LoginDisplay.razor.css" />
   </ItemGroup>
 
   <ItemGroup>
     <Content Include="Pages\Dashboard.razor.css" />
+    <Content Include="Pages\LoggedOut.razor.css" />
     <Content Include="Pages\Watchlist.razor.css" />
     <Content Include="Shared\LoginDisplay.razor.css" />
   </ItemGroup>

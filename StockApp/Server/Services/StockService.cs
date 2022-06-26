@@ -56,12 +56,15 @@ namespace StockApp.Server.Services
                 var tags = jsonObject.SelectToken("results.sic_description").Value<string>();
                 var assetType = jsonObject.SelectToken("results.market").Value<string>();
                 var market = jsonObject.SelectToken("results.primary_exchange").Value<string>();
+                var logoURL = jsonObject.SelectToken("results.branding.icon_url").Value<string>() + $"?apikey={apiKey}";
 
                 var toReturn = new StockDTO
                 {
                     Symbol = stock.Ticker,
                     Name = name,
                     Country = country,
+                    LogoURL = logoURL,
+                    Date = DateTime.Now,
                     Tags = tags,
                     Close = tickersDTO.First().Close,
                     Volume = tickersDTO.First().Volume,
@@ -93,6 +96,7 @@ namespace StockApp.Server.Services
                     Symbol = toReturn.Symbol,
                     Name = toReturn.Name,
                     Country = toReturn.Country,
+                    LogoURL = logoURL,
                     Tags = toReturn.Tags,
                     Close = toReturn.Close,
                     Volume = toReturn.Volume,
@@ -137,6 +141,7 @@ namespace StockApp.Server.Services
                 Symbol = stock.Symbol,
                 Name = stock.Name,
                 Country = stock.Country,
+                LogoURL = stock.LogoURL,
                 Tags = stock.Tags,
                 Close = tickers.First().Close,
                 Open = tickers.First().Open,

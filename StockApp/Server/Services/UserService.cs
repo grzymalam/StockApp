@@ -41,11 +41,14 @@ namespace StockApp.Server.Services
                 .Select(x => x.Symbol)
                 .ToListAsync();
             List<CachedStock> stocks = await _context.CachedStocks.Where(x => symbols.Contains(x.Symbol)).ToListAsync();
+            DateTime dt = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
             var returned = stocks.Select(e => new StockDTO
             {
                 Symbol = e.Symbol,
                 Name = e.Name,
                 Country = e.Country,
+                LogoURL = e.LogoURL,
+                Date = dt.AddMilliseconds(e.UpdateTime),
                 Tags = e.Tags,
                 Volume = e.Volume,
                 High = e.High,

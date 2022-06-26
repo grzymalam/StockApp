@@ -431,6 +431,10 @@ namespace StockApp.Server.Migrations
                     b.Property<float>("High")
                         .HasColumnType("real");
 
+                    b.Property<string>("LogoURL")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<float>("Low")
                         .HasColumnType("real");
 
