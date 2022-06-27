@@ -1,0 +1,20 @@
+﻿@page "/"
+@inject NavigationManager NavigationManager 
+
+<main>
+<div>
+    <h1>Stock App</h1>
+</div>
+<div>
+     <SfButton @onclick="@((args) => NavigateToDashboard())">
+         Dashboard
+    </SfButton>
+</div>
+</main>
+
+@code {
+    public void NavigateToDashboard()
+    {
+        NavigationManager.NavigateTo("/dashboard");
+    }
+}

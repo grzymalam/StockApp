@@ -1,5 +1,4 @@
-﻿@page "/"
-@page "/dashboard"
+﻿@page "/dashboard"
 @page "/dashboard/{StockName}"
 
 @inject AuthenticationStateProvider authProvider
@@ -7,7 +6,6 @@
 @inject ILogger<Dashboard> logger
 @inject NavigationManager NavigationManager 
 
-<link href="_content/Syncfusion.Blazor/styles/material.css" rel="stylesheet" />
 <AuthorizeView>
     <Authorized>
         <PageTitle>Dashboard</PageTitle>
