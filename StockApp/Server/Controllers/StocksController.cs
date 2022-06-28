@@ -2,9 +2,11 @@
 using Microsoft.AspNetCore.Mvc;
 using StockApp.Server.Services;
 using StockApp.Shared;
+using System.Diagnostics;
 
 namespace StockApp.Server.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class StocksController : ControllerBase

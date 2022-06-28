@@ -1,7 +1,11 @@
 ﻿@page "/watchlist"
+
+@using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Components.WebAssembly.Authentication
 @using Syncfusion.Blazor.Navigations
+
+@inject HttpClient Client
 @inject NavigationManager NavigationManager 
 @inject AuthenticationStateProvider authProvider
 @inject ILogger<Watchlist> logger
@@ -39,15 +43,10 @@
 @code {
     List<StockWatchlist> Stocks { get; set; }
     bool DoesUserHaveAnyStocksWatched { get; set; } = true;
-    HttpClient client = new HttpClient();
 
     protected async override Task OnInitializedAsync()
     {
-        client.BaseAddress = new Uri("https://localhost:7173/");
-
-        var userGuid = await getUserId();
-        logger.LogWarning(userGuid);
-        var response = await client.GetAsync(new Uri($"api/users/{userGuid}", UriKind.Relative));
+        var response = await Client.GetAsync(new Uri($"api/users", UriKind.Relative));
         if (!response.IsSuccessStatusCode)
             return;
         
@@ -78,26 +77,14 @@
     public async Task DeleteFromWatchList(BeforeBatchDeleteArgs<StockWatchlist> args)
     {
         var symbol = args.RowData.Symbol;
-        var userGuid = await getUserId();
         
-        logger.LogWarning($"api/users/{userGuid}/{symbol}");
-        var resp = await client.DeleteAsync(new Uri($"api/users/{userGuid}/{symbol}", UriKind.Relative));
+        logger.LogWarning($"api/users/{symbol}");
+        var resp = await Client.DeleteAsync(new Uri($"api/users/{symbol}", UriKind.Relative));
         logger.LogWarning(resp.StatusCode.ToString());
 
         
         StockWatchlist stock = args.RowData as StockWatchlist;
         Stocks.Remove(stock);
-    }
-
-    public async Task<string> getUserId(){
-        AuthenticationState authState = await authProvider.GetAuthenticationStateAsync();
-        var user = authState.User;
-        if (user.Identity.IsAuthenticated)
-            {
-                var userId = $"{user.FindFirst(c => c.Type == "sub")?.Value}";
-                return userId;
-            }
-        return null;
     }
 
     public class StockWatchlist

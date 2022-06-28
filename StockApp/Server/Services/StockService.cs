@@ -7,6 +7,7 @@ using StockApp.Server.Data.Models;
 using StockApp.Server.Models;
 using StockApp.Shared;
 using System.Diagnostics;
+using System.Security.Claims;
 
 namespace StockApp.Server.Services
 {
@@ -23,6 +24,7 @@ namespace StockApp.Server.Services
         {
             return await _context.CachedStocks.AnyAsync();
         }
+
 
         //AU1hCQFcAbUpEiieLlv3UfW0U2c509e0
 
